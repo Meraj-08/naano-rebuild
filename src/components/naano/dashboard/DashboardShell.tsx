@@ -3,6 +3,7 @@ import {
   GridIcon, IdCardIcon, StorefrontIcon, LayersIcon, ChartLineIcon,
   UsersIcon, WalletIcon, PercentIcon, ChatIcon, BellIcon, CreditCardIcon,
 } from "./dashboard-icons";
+import { UserMenu } from "../shared/UserMenu";
 
 export const NAV = [
   { key: "home", label: "Overview", Icon: GridIcon },
@@ -69,10 +70,7 @@ export function DashboardShell({ active, children }: { active: TabKey; children:
           <button className="rounded-xl border border-gray-200 p-2 text-gray-500 hover:bg-gray-50" aria-label="Notifications">
             <BellIcon width={18} height={18} />
           </button>
-          <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-[#3f7f6e] text-sm font-semibold text-white">
-            V
-            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
-          </span>
+          <UserMenu variant="creator" initial="V" bg="#3f7f6e" />
         </header>
 
         <main className="mx-auto w-full max-w-[1400px] flex-1 px-6 py-10 sm:px-10">{children}</main>

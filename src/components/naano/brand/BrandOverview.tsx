@@ -1,11 +1,11 @@
 import { Card } from "../dashboard/dash-ui";
 
 const NEW_CREATORS = [
-  { name: "Sandhya Mishra", tags: "AI · Marketing · SaaS", price: 625, initial: "S", bg: "#c9885b" },
-  { name: "Marcel Velica", tags: "AI · SaaS · Cybersecurity", price: 2019, initial: "M", bg: "#b5643a" },
-  { name: "Amney Mounir", tags: "AI · SaaS · EdTech", price: 1150, initial: "A", bg: "#1f5c46" },
-  { name: "Amber Cheema", tags: "AI · Marketing · SaaS", price: 188, initial: "A", bg: "#7ba05b" },
-  { name: "Sunny Grewal", tags: "AI · SEO · SaaS", price: 1249, initial: "S", bg: "#2f6b8f" },
+  { name: "Sandhya Mishra", tags: "AI · Marketing · SaaS", price: 625, avatar: "/naano/images/avatar-a.png" },
+  { name: "Marcel Velica", tags: "AI · SaaS · Cybersecurity", price: 2019, avatar: "/naano/images/avatar-b.png" },
+  { name: "Amney Mounir", tags: "AI · SaaS · EdTech", price: 1150, avatar: "/naano/images/avatar-c.png" },
+  { name: "Amber Cheema", tags: "AI · Marketing · SaaS", price: 188, avatar: "/naano/images/avatar-h.png" },
+  { name: "Sunny Grewal", tags: "AI · SEO · SaaS", price: 1249, avatar: "/naano/images/avatar-g.png" },
 ];
 
 function Stat({ icon, label }: { icon: string; label: string }) {
@@ -76,7 +76,8 @@ export function BrandOverview() {
               <div key={c.name} className="w-[190px] shrink-0 overflow-hidden rounded-2xl border border-gray-200/80">
                 <div className="h-14 bg-gradient-to-b from-[#eaf0fb] to-white" />
                 <div className="-mt-7 flex flex-col items-center px-4 pb-4 text-center">
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full border-4 border-white text-lg font-semibold text-white" style={{ background: c.bg }}>{c.initial}</span>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={c.avatar} alt={c.name} className="h-14 w-14 rounded-full border-4 border-white object-cover shadow-sm" />
                   <p className="mt-2 font-semibold text-gray-900">{c.name}</p>
                   <p className="text-[12px] text-gray-500">{c.tags}</p>
                   <span className="mt-2 rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-[#2563EB]">90% ICP</span>

@@ -53,3 +53,14 @@ temp/
 
 # NOTE: .agent-logs/ is deliberately NOT ignored — the prompt/response capture
 # log ships with the repo as part of the submission.
+auth.json
+*.auth.json
+.playwright-mcp/auth.json
+.auth/
+
+# Tooling / agent scratch — not part of the product
+.opencode/
+docs/
+scripts/
+public/naano/images/business-dashboard/
+.claude/hooks/debug-payloads.jsonl

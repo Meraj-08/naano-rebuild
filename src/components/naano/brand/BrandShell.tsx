@@ -3,6 +3,7 @@ import {
   GridIcon, StorefrontIcon, LayersIcon, UsersIcon, ChartLineIcon,
   ChatIcon, CreditCardIcon, BellIcon,
 } from "../dashboard/dashboard-icons";
+import { UserMenu } from "../shared/UserMenu";
 
 export const BRAND_NAV = [
   { key: "overview", label: "Overview", Icon: GridIcon },
@@ -65,7 +66,7 @@ export function BrandShell({ active, children }: { active: BrandTabKey; children
               <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-blue-100 text-[10px] font-semibold text-[#2563EB]">1/3</span>
             </div>
             <button className="rounded-xl border border-gray-200 p-2 text-gray-500 hover:bg-gray-50" aria-label="Notifications"><BellIcon width={18} height={18} /></button>
-            <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gray-900 text-sm font-semibold text-white">M<span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" /></span>
+            <UserMenu variant="brand" initial="M" bg="#111827" />
           </div>
         </header>
 

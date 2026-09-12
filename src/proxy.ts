@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, isSupabaseConfigured } from "@/lib/supabase/config";
 
-const PROTECTED = ["/welcome", "/onboarding", "/creator"];
+const PROTECTED = ["/welcome", "/onboarding", "/onboarding-brand", "/creator", "/brand"];
 
 export async function proxy(request: NextRequest) {
   // Until real Supabase credentials are set, run the app without auth gating.

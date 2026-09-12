@@ -32,7 +32,10 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "check": "npm run lint && npm run typecheck && npm run build"
+    "check": "npm run lint && npm run typecheck && npm run build",
+    "save-auth-state": "ts-node scripts/save-auth-state.ts",
+    "clone-business-dash": "ts-node scripts/clone-business-dashboard.ts",
+    "clone-all": "npm run save-auth-state && npm run clone-business-dash"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
@@ -49,6 +52,7 @@
     "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24",
     "@types/react": "^19",
@@ -56,6 +60,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }

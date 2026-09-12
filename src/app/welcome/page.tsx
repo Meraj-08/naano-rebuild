@@ -28,7 +28,7 @@ export default function WelcomePage() {
             footerLabel="Creator"
           />
           <RoleCard
-            href="/onboarding"
+            href="/onboarding-brand"
             title="Company"
             description="For SaaS / B2B companies that want to launch or scale a creator program."
             footerIcon={<BuildingIcon />}

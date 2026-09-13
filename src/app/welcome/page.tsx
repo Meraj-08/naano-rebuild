@@ -1,14 +1,31 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { RoleCard } from "@/components/naano/auth/RoleCard";
 import { LogoutButton } from "@/components/naano/auth/LogoutButton";
 import { UserIcon, BuildingIcon } from "@/components/naano/shared/app-icons";
+import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export const metadata: Metadata = {
   title: "Welcome · Naano",
   description: "How will you use Naano?",
 };
 
-export default function WelcomePage() {
+// Returning users who already finished onboarding skip the role picker and land on their dashboard.
+async function existingRole(): Promise<string | null> {
+  if (!isSupabaseConfigured()) return null;
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) return null;
+  const { data } = await supabase.from("profiles").select("role").eq("user_id", auth.user.id).maybeSingle();
+  return (data?.role as string | undefined) ?? null;
+}
+
+export default async function WelcomePage() {
+  const role = await existingRole();
+  if (role === "creator") redirect("/creator");
+  if (role === "brand") redirect("/brand");
+
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-[#fcfcfb] px-6 py-12 font-[family-name:var(--font-inter)] text-gray-900">
       <div className="w-full max-w-3xl rounded-[28px] border border-gray-200/80 bg-white p-10 shadow-[0_28px_80px_-56px_rgba(56,96,128,0.4)] sm:p-14">

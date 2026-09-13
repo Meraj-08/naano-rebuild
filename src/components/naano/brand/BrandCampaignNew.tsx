@@ -59,7 +59,7 @@ function Section({ label, children }: { label: string; children: React.ReactNode
   return <div className="mt-5 border-t border-gray-100 pt-4"><p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{label}</p>{children}</div>;
 }
 
-function Brief({ product, answers, created, startDate, endDate, onStartDate, onEndDate, onCreate }: { product: string; answers: string[]; created: boolean; startDate: string; endDate: string; onStartDate: (v: string) => void; onEndDate: (v: string) => void; onCreate: () => void }) {
+function Brief({ product, answers, created, saving, startDate, endDate, onStartDate, onEndDate, onCreate }: { product: string; answers: string[]; created: boolean; saving: boolean; startDate: string; endDate: string; onStartDate: (v: string) => void; onEndDate: (v: string) => void; onCreate: () => void }) {
   const { name, bullets } = productParts(product);
   const windowInvalid = !startDate || !endDate || endDate < startDate;
   return (
@@ -91,7 +91,7 @@ function Brief({ product, answers, created, startDate, endDate, onStartDate, onE
           {windowInvalid && !created && <p className="mt-2 text-[13px] text-red-500">End date must be on or after the start date.</p>}
         </Section>
         <div className="mt-6 flex flex-wrap gap-3">
-          <button onClick={onCreate} disabled={windowInvalid && !created} className={`rounded-xl px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60 ${created ? "bg-emerald-500" : "bg-[#2563EB] hover:bg-[#1d4fd7]"}`}>{created ? "✓ Campaign created" : "Create a campaign →"}</button>
+          <button onClick={onCreate} disabled={created || saving || windowInvalid} className={`rounded-xl px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60 ${created ? "bg-emerald-500" : "bg-[#2563EB] hover:bg-[#1d4fd7]"}`}>{created ? "✓ Campaign created" : saving ? "Creating…" : "Create a campaign →"}</button>
           <button className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-800">🔖 Save to drafts</button>
           <button className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-800">💬 Adjust with AI</button>
         </div>
@@ -107,10 +107,19 @@ export function BrandCampaignNew() {
   const [product, setProduct] = useState("");
   const [answers, setAnswers] = useState<string[]>([]);
   const [created, setCreated] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [startDate, setStartDate] = useState(defaultStart());
   const [endDate, setEndDate] = useState(defaultEnd());
 
-  const reset = () => { setMode("choose"); setPhase("quiz"); setQIndex(0); setProduct(""); setAnswers([]); setCreated(false); setStartDate(defaultStart()); setEndDate(defaultEnd()); };
+  const reset = () => { setMode("choose"); setPhase("quiz"); setQIndex(0); setProduct(""); setAnswers([]); setCreated(false); setSaving(false); setStartDate(defaultStart()); setEndDate(defaultEnd()); };
+
+  const create = async () => {
+    if (created || saving) return; // guard against double-submit
+    setSaving(true);
+    const campaign = await createCampaign({ name: productParts(product).name, brief: [product, ...answers].join(" · "), start_date: startDate, end_date: endDate });
+    setSaving(false);
+    if (campaign) setCreated(true);
+  };
   const choose = (opt: string) => {
     const next = [...answers, opt];
     setAnswers(next);
@@ -172,7 +181,7 @@ export function BrandCampaignNew() {
 
         {phase === "brief" && (
           <div>
-            <Brief product={product} answers={answers} created={created} startDate={startDate} endDate={endDate} onStartDate={setStartDate} onEndDate={setEndDate} onCreate={async () => { await createCampaign({ name: productParts(product).name, brief: [product, ...answers].join(" · "), start_date: startDate, end_date: endDate }); setCreated(true); }} />
+            <Brief product={product} answers={answers} created={created} saving={saving} startDate={startDate} endDate={endDate} onStartDate={setStartDate} onEndDate={setEndDate} onCreate={create} />
             {created && (
               <div className="mx-auto mt-6 max-w-3xl rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
                 <p className="text-[14px] text-gray-500">Brief approved ✓ — next step:</p>

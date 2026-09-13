@@ -5,6 +5,7 @@ export interface CardProfile {
   topic?: string;
   headline?: string;
   avatarInitial?: string;
+  avatarUrl?: string;
   countryFlag?: string;
   followers?: number | null;
   impressions?: number | null;
@@ -29,6 +30,7 @@ export function MarketplaceCard({
   topic,
   headline = "Your LinkedIn headline and topics will appear here.",
   avatarInitial = "M",
+  avatarUrl,
   countryFlag,
   followers = null,
   impressions = null,
@@ -63,9 +65,14 @@ export function MarketplaceCard({
 
       {/* Avatar */}
       <div className="relative z-10 -mt-9 flex justify-center">
-        <div className="flex h-[76px] w-[76px] items-center justify-center rounded-full border-4 border-white bg-[#5b5148] text-2xl font-semibold text-white shadow">
-          {avatarInitial}
-        </div>
+        {avatarUrl ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img src={avatarUrl} alt={name} className="h-[76px] w-[76px] rounded-full border-4 border-white object-cover shadow" />
+        ) : (
+          <div className="flex h-[76px] w-[76px] items-center justify-center rounded-full border-4 border-white bg-[#5b5148] text-2xl font-semibold text-white shadow">
+            {avatarInitial}
+          </div>
+        )}
       </div>
 
       <div className="px-6 pb-2 pt-3 text-center">

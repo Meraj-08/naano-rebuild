@@ -1,4 +1,11 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Card } from "./dash-ui";
+import { getProfile, parseAmount, type Profile } from "@/lib/naano/db";
+import { fmt } from "@/lib/naano/creator";
+
+const CHIP_COLORS = ["bg-orange-50 text-orange-600", "bg-blue-50 text-[#2563EB]", "bg-emerald-50 text-emerald-600", "bg-purple-50 text-purple-600"];
 
 function Section({ title, children, hideable = true }: { title: string; children: React.ReactNode; hideable?: boolean }) {
   return (
@@ -21,6 +28,15 @@ function Section({ title, children, hideable = true }: { title: string; children
 }
 
 export function MyCardTab() {
+  const [profile, setProfile] = useState<Profile | null>(null);
+  useEffect(() => { getProfile().then(setProfile); }, []);
+
+  const name = profile?.name || "Your name";
+  const initial = name[0].toUpperCase();
+  const followers = profile?.followers ?? 0;
+  const tags = (profile?.tags || "").split(/[·,]/).map((t) => t.trim()).filter(Boolean);
+  const rate = profile?.rate ? parseAmount(profile.rate) : 0;
+
   return (
     <div>
       <div className="mb-4 flex justify-end">
@@ -36,35 +52,45 @@ export function MyCardTab() {
           <Card className="p-6">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-5">
-                <span className="flex h-20 w-20 items-center justify-center rounded-full bg-[#5b6b66] text-2xl font-semibold text-white">V</span>
+                {profile?.avatar ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={profile.avatar} alt={name} className="h-20 w-20 rounded-full object-cover" />
+                ) : (
+                  <span className="flex h-20 w-20 items-center justify-center rounded-full bg-[#5b6b66] text-2xl font-semibold text-white">{initial}</span>
+                )}
                 <div>
-                  <h2 className="font-[family-name:var(--font-jakarta)] text-2xl font-bold text-gray-900">vector 404</h2>
+                  <h2 className="font-[family-name:var(--font-jakarta)] text-2xl font-bold text-gray-900">{name}</h2>
                   <button className="mt-2 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-semibold text-[#2563EB]">Change profile photo</button>
                 </div>
               </div>
               <span className="flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5 text-[13px] font-medium text-gray-600"><span className="h-2 w-2 rounded-full bg-gray-400" />Private Marketplace card</span>
             </div>
-            <div className="mt-6"><p className="text-2xl font-bold text-gray-900">0</p><p className="text-[13px] uppercase tracking-wide text-gray-400">Followers</p></div>
+            <div className="mt-6"><p className="text-2xl font-bold text-gray-900">{fmt(followers)}</p><p className="text-[13px] uppercase tracking-wide text-gray-400">Followers</p></div>
           </Card>
 
           <Section title="About">
+            {profile?.bio && <p className="mb-3 text-[14px] leading-relaxed text-gray-600">{profile.bio}</p>}
             <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-orange-50 px-3 py-1 text-sm font-medium text-orange-600">Design</span>
-              <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-[#2563EB]">Productivity</span>
-              <span className="rounded-full bg-orange-50 px-3 py-1 text-sm font-medium text-orange-600">Creative</span>
+              {tags.length === 0 ? (
+                <span className="text-[13px] text-gray-400">No topics added yet.</span>
+              ) : (
+                tags.map((t, i) => (
+                  <span key={t} className={`rounded-full px-3 py-1 text-sm font-medium ${CHIP_COLORS[i % CHIP_COLORS.length]}`}>{t}</span>
+                ))
+              )}
             </div>
           </Section>
 
           <Section title="Audience & average metrics">
             <div className="flex gap-3">
-              <div className="flex-1 rounded-xl bg-gray-50 p-4"><p className="text-2xl font-bold text-gray-900">0</p><p className="text-[13px] uppercase tracking-wide text-gray-400">Followers</p></div>
-              <div className="flex-1 rounded-xl bg-gray-50 p-4"><p className="text-2xl font-bold text-gray-900">India</p><p className="text-[13px] uppercase tracking-wide text-gray-400">Based in</p></div>
+              <div className="flex-1 rounded-xl bg-gray-50 p-4"><p className="text-2xl font-bold text-gray-900">{fmt(followers)}</p><p className="text-[13px] uppercase tracking-wide text-gray-400">Followers</p></div>
+              <div className="flex-1 rounded-xl bg-gray-50 p-4"><p className="text-2xl font-bold text-gray-900">Global</p><p className="text-[13px] uppercase tracking-wide text-gray-400">Based in</p></div>
             </div>
           </Section>
 
           <Section title="Pricing">
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl bg-gray-50 p-4"><p className="text-2xl font-bold text-gray-900">€10</p><p className="text-[13px] uppercase tracking-wide text-gray-400">Price per post</p></div>
+              <div className="rounded-xl bg-gray-50 p-4"><p className="text-2xl font-bold text-gray-900">€{rate}</p><p className="text-[13px] uppercase tracking-wide text-gray-400">Price per post</p></div>
               <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4"><div><p className="text-lg font-bold text-gray-900">None set</p><p className="text-[13px] uppercase tracking-wide text-gray-400">Bundle</p></div><span className="text-gray-400">▾</span></div>
             </div>
             <button className="mt-4 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-semibold text-gray-800">Edit price & bundles</button>

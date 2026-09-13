@@ -1,7 +1,12 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Card, PageHead, StatCard } from "./dash-ui";
 import { MarketplaceCard } from "../shared/MarketplaceCard";
 import { ChartLineIcon } from "./dashboard-icons";
 import { IdCardIcon } from "./dashboard-icons";
+import { getProfile, listCreatorCollaborations, type Profile, type Collaboration } from "@/lib/naano/db";
+import { computeSnapshot, toCardProps, fmt } from "@/lib/naano/creator";
 
 function EyeIcon() {
   return (
@@ -30,15 +35,25 @@ const outlineBtn =
   "flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50";
 
 export function OverviewTab() {
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [collabs, setCollabs] = useState<Collaboration[]>([]);
+  useEffect(() => {
+    getProfile().then(setProfile);
+    listCreatorCollaborations().then(setCollabs);
+  }, []);
+
+  const snap = computeSnapshot(profile, collabs);
+  const firstName = (profile?.name || "there").split(" ")[0];
+
   return (
     <div>
-      <PageHead eyebrow="Creator workspace" title="Good to see you, vector" subtitle="Your creator activity, at a glance." />
+      <PageHead eyebrow="Creator workspace" title={`Good to see you, ${firstName}`} subtitle="Your creator activity, at a glance." />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={<EyeIcon />} label="Public post reach" value="—" sub="Import in progress" />
-        <StatCard icon={<PostIcon />} label="Public posts" value="0" sub="Original LinkedIn posts found" />
-        <StatCard icon={<ChartLineIcon width={16} height={16} />} label="Public engagements" value="0" sub="Reactions, comments and reposts" />
-        <StatCard icon={<UsersMini />} label="LinkedIn followers" value="865" sub="Imported from the public profile" />
+        <StatCard icon={<EyeIcon />} label="Public post reach" value={fmt(snap.reach)} sub="Estimated reach across your posts" />
+        <StatCard icon={<PostIcon />} label="Public posts" value={String(snap.posts)} sub="Posts contributing to your reach" />
+        <StatCard icon={<ChartLineIcon width={16} height={16} />} label="Public engagements" value={fmt(snap.engagements)} sub="Reactions, comments and reposts" />
+        <StatCard icon={<UsersMini />} label="LinkedIn followers" value={fmt(snap.followers)} sub="From your creator profile" />
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
@@ -56,7 +71,7 @@ export function OverviewTab() {
             </div>
           </div>
           <div className="mt-6 flex justify-center">
-            <MarketplaceCard name="vector 404" topic="Design · Productivity · Creative" headline="SDE intern @Amazon | Student Btech CSE | Full stack developer | Undergrad" avatarInitial="V" countryFlag="🇮🇳" followers={865} cost={10} costLabel="Chosen cost" />
+            <MarketplaceCard {...toCardProps(profile)} avatarInitial={(profile?.name || "M")[0].toUpperCase()} costLabel="Chosen cost" />
           </div>
         </Card>
 
@@ -93,7 +108,7 @@ export function OverviewTab() {
           </div>
           <p className="mt-1 text-[14px] text-gray-500">The 3 campaigns that best match your audience.</p>
           <p className="mt-4 text-[14px] leading-relaxed text-gray-500">
-            🔒 Paid campaigns open at 1,000 followers - You have 865 followers. Keep posting and come back - re-check your count once a week from Settings.
+            Open the Opportunities tab to browse campaigns matched to your audience and apply.
           </p>
         </Card>
 
@@ -106,7 +121,19 @@ export function OverviewTab() {
           <div className="mt-4 grid grid-cols-5 gap-2 border-b border-gray-100 pb-2 text-[13px] font-medium text-gray-400">
             <span>Brand</span><span>Status</span><span>Next action</span><span>Due</span><span>Net</span>
           </div>
-          <p className="py-10 text-center text-[14px] text-gray-400">No active collaborations.</p>
+          {collabs.filter((c) => c.status !== "invited").length === 0 ? (
+            <p className="py-10 text-center text-[14px] text-gray-400">No active collaborations.</p>
+          ) : (
+            collabs.filter((c) => c.status !== "invited").slice(0, 4).map((c) => (
+              <div key={c.id} className="grid grid-cols-5 items-center gap-2 border-b border-gray-50 py-3 text-[13px] last:border-0">
+                <span className="truncate font-medium text-gray-900">{c.creator_name}</span>
+                <span className="capitalize text-gray-500">{c.status}</span>
+                <span className="truncate text-gray-500">{c.next_action || "—"}</span>
+                <span className="text-gray-500">{c.due_date || "—"}</span>
+                <span className="font-semibold text-gray-900">{c.net || c.rate || "—"}</span>
+              </div>
+            ))
+          )}
         </Card>
       </div>
     </div>

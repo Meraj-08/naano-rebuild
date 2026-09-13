@@ -1,9 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "../dashboard/dash-ui";
+import { listCampaigns, campaignStatus, type Campaign } from "@/lib/naano/db";
 
-const FILTERS = ["All", "Active", "Draft", "Completed"] as const;
+const FILTERS = ["All", "Active", "Draft", "Ended"] as const;
+
+const STATUS_STYLE: Record<string, string> = {
+  active: "bg-emerald-50 text-emerald-600",
+  draft: "bg-gray-100 text-gray-600",
+  ended: "bg-red-50 text-red-600",
+};
 
 function CreateCard() {
   return (
@@ -14,37 +21,34 @@ function CreateCard() {
       <h3 className="mt-5 text-lg font-bold text-[#2563EB]">Create a campaign</h3>
       <p className="mt-1 text-[14px] text-gray-500">Launch a new campaign in 2 minutes — with AI, the Naano team, or an existing link.</p>
       <div className="mt-4 grid grid-cols-3 border-y border-gray-100 py-3 text-[13px] text-gray-400">
-        <div><p className="text-gray-900">—</p>Creators</div>
-        <div><p className="text-gray-900">—</p>Published</div>
-        <div><p className="text-gray-900">—</p>Committed budget</div>
+        <div><p className="text-gray-900">—</p>Creators</div><div><p className="text-gray-900">—</p>Published</div><div><p className="text-gray-900">—</p>Committed budget</div>
       </div>
       <a href="#campaign-new" className="mt-4 inline-block rounded-xl bg-[#2563EB] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#1d4fd7]">Get started →</a>
     </Card>
   );
 }
 
-function CampaignCard() {
+function CampaignCard({ c }: { c: Campaign }) {
+  const created = new Date(c.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  const status = campaignStatus(c);
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between rounded-xl bg-gradient-to-r from-[#eaf0fb] to-white px-4 py-4">
         <div className="flex items-center gap-3">
           <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#0A66C2] text-xl font-bold text-white">in</span>
-          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-600">● Active</span>
+          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLE[status]}`}>● {status[0].toUpperCase() + status.slice(1)}</span>
         </div>
-        <span className="text-[12px] font-semibold uppercase tracking-wide text-gray-400">Created on 12 Sept 2026</span>
+        <span className="text-[12px] font-semibold uppercase tracking-wide text-gray-400">Created on {created}</span>
       </div>
-      <h3 className="mt-5 text-lg font-bold text-gray-900">https://www.linkedin.com/company/naanooo/ creator brief</h3>
-      <p className="mt-2 text-[14px] leading-relaxed text-gray-500">https://www.linkedin.com/company/naanooo/ is described by the company as We help to get customer the Best B2B brand deals. The intended audience is professionals connected to SaaS in Europe, North America. Introduce the product through yo…</p>
+      <h3 className="mt-5 text-lg font-bold text-gray-900">{c.name}</h3>
+      {(c.start_date || c.end_date) && <p className="mt-1 text-[12px] font-medium text-gray-400">Booking window: {c.start_date ?? "—"} → {c.end_date ?? "—"}</p>}
+      {c.brief && <p className="mt-2 line-clamp-2 text-[14px] leading-relaxed text-gray-500">{c.brief}</p>}
       <div className="mt-4 grid grid-cols-3 border-y border-gray-100 py-3 text-[13px] text-gray-400">
-        <div><p className="text-lg font-bold text-gray-900">0</p>Creators</div>
-        <div><p className="text-lg font-bold text-gray-900">0</p>Published</div>
-        <div><p className="text-lg font-bold text-gray-900">€0</p>Committed budget</div>
+        <div><p className="text-lg font-bold text-gray-900">0</p>Creators</div><div><p className="text-lg font-bold text-gray-900">0</p>Published</div><div><p className="text-lg font-bold text-gray-900">€0</p>Committed budget</div>
       </div>
       <div className="mt-4 flex items-center justify-end gap-4 text-sm">
         <a href="#marketplace" className="font-semibold text-gray-900">Open campaign →</a>
-        <span className="text-gray-300">/</span>
-        <span className="text-gray-500">📄 My brief</span>
-        <button className="rounded-lg border border-red-100 p-1.5 text-red-400 hover:bg-red-50"><svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={2}><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg></button>
+        <span className="text-gray-300">/</span><span className="text-gray-500">📄 My brief</span>
       </div>
     </Card>
   );
@@ -52,9 +56,12 @@ function CampaignCard() {
 
 export function BrandCampaigns() {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
-  const showCampaign = filter === "All" || filter === "Active";
-  const showCreate = filter === "All" || filter === "Draft";
-  const empty = !showCampaign && !showCreate;
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { listCampaigns().then((c) => { setCampaigns(c); setLoading(false); }); }, []);
+
+  const shown = campaigns.filter((c) => filter === "All" || campaignStatus(c) === filter.toLowerCase());
 
   return (
     <div>
@@ -64,14 +71,14 @@ export function BrandCampaigns() {
       </div>
       <div className="mb-6 flex items-center justify-between">
         <div className="flex rounded-2xl bg-gray-100 p-1 text-sm font-semibold">
-          {FILTERS.map((f) => (
-            <button key={f} onClick={() => setFilter(f)} className={`rounded-xl px-4 py-2 ${filter === f ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>{f}</button>
-          ))}
+          {FILTERS.map((f) => (<button key={f} onClick={() => setFilter(f)} className={`rounded-xl px-4 py-2 ${filter === f ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>{f}</button>))}
         </div>
-        <span className="text-[14px] text-gray-500">{showCampaign ? 1 : 0} campaigns</span>
+        <span className="text-[14px] text-gray-500">{shown.length} campaigns</span>
       </div>
 
-      {empty ? (
+      {loading ? (
+        <p className="py-16 text-center text-[14px] text-gray-400">Loading campaigns…</p>
+      ) : shown.length === 0 && filter !== "All" && filter !== "Draft" ? (
         <Card className="py-20 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 text-gray-400">📁</div>
           <p className="font-semibold text-gray-900">No campaigns in this view</p>
@@ -80,8 +87,8 @@ export function BrandCampaigns() {
         </Card>
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">
-          {showCampaign && <CampaignCard />}
-          {showCreate && <CreateCard />}
+          {shown.map((c) => <CampaignCard key={c.id} c={c} />)}
+          {(filter === "All" || filter === "Draft") && <CreateCard />}
         </div>
       )}
     </div>
